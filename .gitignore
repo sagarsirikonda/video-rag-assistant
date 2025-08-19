@@ -1,0 +1,16 @@
+# Python virtual environment
+/venv-video/
+
+# User-generated data and media files
+# This includes uploaded videos, transcripts, and vector stores
+/data/
+
+# Environment variables and API keys
+/.env
+
+# Python cache files
+/__pycache__/
+*.pyc
+
+# Streamlit specific cache/config files (optional but good practice)
+/.streamlit/
