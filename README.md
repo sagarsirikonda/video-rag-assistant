@@ -35,6 +35,7 @@ An intelligent video assistant that allows you to have a conversation with your 
 ```bash
 git clone [https://github.com/your-username/video-rag-assistant.git](https://github.com/your-username/video-rag-assistant.git)
 cd video-rag-assistant
+```
 
 ### 2. Create a Virtual Environment
 
@@ -48,6 +49,7 @@ python -m venv venv
 # For macOS/Linux
 python3 -m venv venv
 source venv/bin/activate
+```
 
 ### 3. Install Dependencies
 
@@ -55,6 +57,7 @@ Install all the required Python libraries using the `requirements.txt` file.
 
 ```bash
 pip install -r requirements.txt
+```
 
 ### 4. Set Up API Keys
 
@@ -73,6 +76,7 @@ Once the setup is complete, you can run the Streamlit application with a single 
 
 ```bash
 streamlit run app.py
+```
 
 A new tab should open in your web browser at `http://localhost:8501`.
 
