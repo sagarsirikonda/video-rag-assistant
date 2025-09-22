@@ -111,7 +111,7 @@ if __name__ == '__main__':
     # llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
 
     # GEMINI
-    ChatGoogleGenerativeAI(model="gemini-2.0-flash",
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash",
                                 temperature=0,
                                 google_api_key=os.getenv("GEMINI_API_KEY")
                             )
