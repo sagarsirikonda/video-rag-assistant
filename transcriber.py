@@ -4,7 +4,6 @@ import subprocess
 import json
 from pathlib import Path
 
-# Note: The model loading is wrapped in a function.
 # In our Streamlit app (app.py), we will use @st.cache_resource
 # to load this model only once.
 def load_model(model_name="base"):
@@ -22,12 +21,6 @@ def extract_audio(video_path: str, audio_path: str):
     if not os.path.exists(video_path):
         raise FileNotFoundError(f"Video file not found at {video_path}")
 
-    # --- UPDATED COMMAND ---
-    # This command is more robust:
-    # -vn: No video output
-    # -c:a mp3: Explicitly set the audio codec to mp3
-    # -q:a 2: Set a high-quality variable bitrate (VBR)
-    # -y: Overwrite the output file if it exists
     command = f'ffmpeg -i "{video_path}" "{audio_path}" -y'
     try:
         # Using DEVNULL to hide ffmpeg's console output for a cleaner UX
@@ -57,7 +50,7 @@ def generate_transcript(audio_path: str, model) -> list[dict]:
     # Perform the transcription
     result = model.transcribe(audio_path, verbose=False)
     
-    # --- UPDATED SECTION TO CLEAN JSON ---
+    # --- SECTION TO CLEAN JSON ---
     essential_segments = []
     for segment in result["segments"]:
         essential_segments.append({
@@ -89,13 +82,12 @@ def process_video(video_path: str, output_dir: str, model) -> str:
     audio_path = os.path.join(output_dir, f"{video_filename}.mp3")
     transcript_path = os.path.join(output_dir, f"{video_filename}_transcript.json")
 
-    # Step 1: Extract audio from the video
+    # Extracting audio from the video
     extract_audio(video_path, audio_path)
 
-    # Step 2: Generate the transcript
+    # Generating the transcript
     transcript_segments = generate_transcript(audio_path, model)
 
-    # Step 3: Save the transcript to a JSON file
     with open(transcript_path, 'w', encoding='utf-8') as f:
         json.dump(transcript_segments, f, indent=4)
 
@@ -104,12 +96,10 @@ def process_video(video_path: str, output_dir: str, model) -> str:
 
     return transcript_path
 
-# This block allows for testing the script directly
+# --- Testing Block ---
 if __name__ == '__main__':
-    # --- Configuration for Testing ---
     TEST_VIDEO_PATH = "C:/Users/sirik/OneDrive/Desktop/Siri/The ginormous collision that tilted our planet - Elise Cutts [vCbx5jtZ_qI].mp4" # IMPORTANT: Change this to a real video file
     
-    # We'll use our planned data structure for the test
     DATA_DIR = "data"
     TRANSCRIPTS_DIR = os.path.join(DATA_DIR, "transcripts")
     

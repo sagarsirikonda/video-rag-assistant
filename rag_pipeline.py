@@ -15,22 +15,32 @@ from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_huggingface import HuggingFaceEmbeddings
 
-# --- Helper function to parse the LLM response ---
+# --- Function to parse the LLM response ---
 def parse_llm_response(response: str) -> tuple[str, list[str]]:
     """
-    Parses the LLM's response by first extracting all timestamps, then
-    removing them from the text, and finally cleaning up any trailing commas.
+    Parses the LLM's response using a two-step cleaning process that
+    handles multiple timestamp formats and cleans up trailing characters.
     """
-    timestamp_pattern = r'\[\d{2}:\d{2}:\d{2}-\d{2}:\d{2}:\d{2}\]'
+    # Pattern to find individual start-end time pairs (e.g., "00:00:00-00:00:49")
+    time_pair_pattern = r'\d{2}:\d{2}:\d{2}-\d{2}:\d{2}:\d{2}'
     
-    # 1. Extract all timestamps
-    timestamps = re.findall(timestamp_pattern, response)
+    # 1. Extract all raw time pairs
+    found_pairs = re.findall(time_pair_pattern, response)
+    timestamps = [f"[{pair}]" for pair in found_pairs]
     
-    # 2. Remove all found timestamps from the original response
-    text_without_timestamps = re.sub(timestamp_pattern, '', response).strip()
-    
-    # 3. Use your regex to remove any trailing commas and whitespace
-    clean_answer = re.sub(r'(,\s*)+$', '', text_without_timestamps).strip()
+    match = re.search(time_pair_pattern, response)
+    if match:
+        first_timestamp_start_index = match.start()
+        last_bracket_before_ts = response.rfind('[', 0, first_timestamp_start_index)
+        
+        if last_bracket_before_ts != -1:
+            preliminary_answer = response[:last_bracket_before_ts].strip()
+        else:
+            preliminary_answer = response[:first_timestamp_start_index].strip()
+    else:
+        preliminary_answer = response.strip()
+        
+    clean_answer = re.sub(r'(,\s*)+$', '', preliminary_answer).strip()
         
     return clean_answer, timestamps
     
@@ -49,15 +59,13 @@ def create_rag_chain(vector_store_path: str, llm):
     )
     retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-    # --- SIMPLIFIED AND CORRECTED format_docs FUNCTION ---
-    # This version correctly reads metadata from the modern vector store.
+    
     def format_docs(docs):
         """
         Formats the retrieved documents to include text and timestamp for the LLM.
         """
         formatted_context = []
         for doc in docs:
-            # The timestamp is now directly accessible in the document's metadata
             timestamp = doc.metadata.get('timestamp', 'No timestamp available')
             context_line = f"Context: {doc.page_content}\nTimestamp: {timestamp}"
             formatted_context.append(context_line)
@@ -84,7 +92,7 @@ def create_rag_chain(vector_store_path: str, llm):
     """
     prompt = ChatPromptTemplate.from_template(prompt_template)
 
-    # --- RAG Chain (Unchanged Logic, Now Uses Corrected format_docs) ---
+    # --- RAG Chain ---
     rag_chain = (
         {"context": retriever | format_docs, "question": RunnablePassthrough()}
         | prompt
@@ -98,15 +106,21 @@ def create_rag_chain(vector_store_path: str, llm):
 if __name__ == '__main__':
     load_dotenv()
 
-    # --- LLM Configuration with All Options Restored ---
-    # GROQ (fast and free tier)
-    llm = ChatGroq(model_name="llama3-8b-8192", temperature=0)
+    # --- LLM Configuration with Options ---
+    # GROQ (uncomment to use)
+    # llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
 
-    # GEMINI (uncomment to use)
-    # llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
+    # GEMINI
+    ChatGoogleGenerativeAI(model="gemini-2.0-flash",
+                                temperature=0,
+                                google_api_key=os.getenv("GEMINI_API_KEY")
+                            )
     
     # OPENAI (uncomment to use)
-    # llm = ChatOpenAI(model="gpt-3.5-turbo", temperature=0)
+    # llm = ChatOpenAI(model="gpt-3.5-turbo", 
+    #                  temperature=0, 
+    #                  api_key=os.getenv("OPENAI_API_KEY")
+    #                  )
 
     # --- Vector Store Configuration for Testing ---
     TEST_VECTOR_STORE_PATH = "data/vector_store/The ginormous collision that tilted our planet - Elise Cutts [vCbx5jtZ_qI]"

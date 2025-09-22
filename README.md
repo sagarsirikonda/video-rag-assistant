@@ -68,6 +68,8 @@ You will need an API key from an LLM provider. This project is configured to use
 
     ```env
     GROQ_API_KEY="your-secret-api-key-here"
+    GEMINI_API_KEY="your-secret-api-key-here"
+    OPENAI_API_KEY="your-secret-api-key-here"
     ```
 
 ## ▶️ How to Run the Application
