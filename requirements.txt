@@ -1,17 +1,13 @@
-# requirements.txt
 streamlit
 openai-whisper
 ffmpeg-python
-langchain
-faiss-cpu  # or faiss-gpu if you have a compatible GPU
-sentence-transformers
-python-dotenv
-# Add LLM libraries as needed
-# groq, google-generativeai, openai
+yt-dlp
 langchain
 langchain_community
-langchain-huggingface
 langchain-groq
-langchain-google-genai 
+langchain-google-genai
 langchain-openai
+faiss-cpu
+langchain-huggingface
+sentence-transformers
 python-dotenv
